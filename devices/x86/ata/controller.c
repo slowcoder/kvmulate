@@ -518,9 +518,9 @@ static uint32 pciata_readl(int reg) {
 }
 
 static void pciata_writeb(int reg,uint8 val) {
-  uint8 *pConf;
+  //uint8 *pConf;
 
-  pConf = ((uint8*)&dev.conf) + reg;
+  //pConf = ((uint8*)&dev.conf) + reg;
 
   //LOG("Reg=0x%x, Val=0x%x",reg,val);
 
@@ -529,9 +529,9 @@ static void pciata_writeb(int reg,uint8 val) {
   //ASSERT(0,"Not implemented");
 }
 static void pciata_writew(int reg,uint16 val) {
-  uint8 *pConf;
+  //uint8 *pConf;
 
-  pConf = ((uint8*)&dev.conf) + reg;
+  //pConf = ((uint8*)&dev.conf) + reg;
 
   //pciata_dumpWrite(reg,val);
   //ASSERT(0,"Not implemented (reg=0x%x,val=0x%x)",reg,val);
