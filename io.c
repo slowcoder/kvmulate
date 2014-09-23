@@ -17,8 +17,10 @@ static io_handler_t *lookup_handler(uint16 address) {
  
   for(i=0;i<iohandlers;i++) {
     //    LOG("Addr=0x%x  ioh.m=0x%x  ioh.b=0x%x",address,iohandler[i]->mask,iohandler[i]->base);
-    if( (address & iohandler[i]->mask) == iohandler[i]->base ) 
+    if( (address & iohandler[i]->mask) == iohandler[i]->base )  {
+      //LOGD("Returning handler %p (Base=0x%x,Mask=0x%x,Desc=%s) for req addr 0x%x",iohandler[i],iohandler[i]->base,iohandler[i]->mask,iohandler[i]->pzDesc,address);
       return iohandler[i];
+    }
   }
   return NULL;
 }
@@ -57,7 +59,8 @@ void io_outb(uint16 port,uint8 val) {
     return;
   }
 
-  ASSERT(handler != NULL,"No handler for writes to port 0x%04x",port);
+  if( handler == NULL)
+    LOGW("No handler for writes to port 0x%04x (Val=0x%02x)",port,val);
 }
 
 void io_outw(uint16 port,uint16 val) {
@@ -73,7 +76,9 @@ void io_outw(uint16 port,uint16 val) {
     return;
   }
 
+#if BREAK_ON_UNHANDLED
   ASSERT(handler != NULL,"No handler for writes to port 0x%04x",port);
+#endif
 }
 
 void io_outl(uint16 port,uint32 val) {
@@ -89,7 +94,9 @@ void io_outl(uint16 port,uint32 val) {
     return;
   }
 
+#if BREAK_ON_UNHANDLED
   ASSERT(handler != NULL,"No handler for writes to port 0x%04x",port);
+#endif
 }
 
 uint8 io_inb(uint16 port) {
@@ -103,8 +110,9 @@ uint8 io_inb(uint16 port) {
     return handler->inb(handler,port - handler->base);
   }
 
-  ASSERT(handler != NULL,"No handler for reads from port 0x%04x",port);
-  return 0;
+  if( handler == NULL)
+    LOGW("No handler for reads from port 0x%04x",port);
+  return 0xFF;
 }
 
 uint16 io_inw(uint16 port) {
@@ -118,7 +126,9 @@ uint16 io_inw(uint16 port) {
     return handler->inw(handler,port - handler->base);
   }
 
+#if BREAK_ON_UNHANDLED
   ASSERT(handler != NULL,"No handler for reads from port 0x%04x",port);
+#endif
   return 0;
 }
 
@@ -133,7 +143,9 @@ uint32 io_inl(uint16 port) {
     return handler->inl(handler,port - handler->base);
   }
 
+#if BREAK_ON_UNHANDLED
   ASSERT(handler != NULL,"No handler for reads from port 0x%04x",port);
+#endif
   return 0;
 }
 

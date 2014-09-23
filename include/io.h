@@ -11,6 +11,8 @@ typedef struct io_handler {
   void   (*outb)(struct io_handler *,uint16 address,uint8 val);
   void   (*outw)(struct io_handler *,uint16 address,uint16 val);
   void   (*outl)(struct io_handler *,uint16 address,uint32 val);
+
+  char *pzDesc;
 } io_handler_t;
 
 struct iohdl *io_register_handler(io_handler_t *handler);

@@ -9,7 +9,7 @@
 
 static uint8 biosdebug_inb(struct io_handler *hdl,uint16 port) {
 
-  ASSERT(0,"Unimplemented read from 0x%04",hdl->base + port);
+  ASSERT(0,"Unimplemented read from 0x%04x",hdl->base + port);
   
   return 0;
 }

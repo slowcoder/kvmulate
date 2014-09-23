@@ -4,7 +4,8 @@
 
 #include "log.h"
 
-int LogLevel = LOGLEVEL_INFO;
+//int LogLevel = LOGLEVEL_INFO;
+int LogLevel = LOGLEVEL_DEBUG;
 
 void __logi(int level, const char *pzFunc,const char *pzFile,int line,const char *pzMessage,...) {
 	char tmpStr[1024],tmpStr2[1024];
@@ -21,4 +22,6 @@ void __logi(int level, const char *pzFunc,const char *pzFile,int line,const char
 	strcat(tmpStr,tmpStr2);
 
 	printf("%s\n",tmpStr);
+
+	fflush(stdout);
 }

@@ -66,10 +66,15 @@ static void  qemupara_outw(struct io_handler *hdl,uint16 port,uint16 val) {
     if( val == 0x00 ) {
       pCtx->ret.off = 0;
       memcpy(pCtx->ret.buff,"QEMU",4);
+    } else if( val == 0xD ) { // NUMA count
+      *(uint32*)(  pCtx->ret.buff + 0  ) = 1; // 1
+      //LOG("NUMA Count=0x%02x",v)
     } else if( val == 0xE ) { // Boot menu
       pCtx->ret.off = 0;
       pCtx->ret.buff[0] = 0;
       pCtx->ret.buff[1] = 1; // Do show boot menu
+    } else if( val == 0x8000 ) { // ACPI Table
+      pCtx->ret.off = 0;
     } else if( val == 0x8003 ) { // E820 Table
       e820table_t *pTable;
 
@@ -112,9 +117,9 @@ static void  qemupara_outl(struct io_handler *hdl,uint16 port,uint32 val) {
   ASSERT(0,"Unimplemented write to 0x%04x",hdl->base + port);
 }
 
+static struct io_handler hdl;
+static ctx_t ctx;
 int x86_qemuparavirt_init(void) {
-  static ctx_t ctx;
-  static struct io_handler hdl;
 
   hdl.base   = 0x0510;
   hdl.mask   = 0xFFFE;

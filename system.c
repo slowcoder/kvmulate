@@ -53,6 +53,20 @@ static int checkExtensions(int fd) {
   return 0;
 }
 
+static unsigned char *phys_lowmem[2] = {NULL,NULL};
+
+void *sys_getLowMem(uint32 addr) {
+  if( addr < 0xA0000 ) {
+    LOGD("Foo!!!  %p",phys_lowmem[0]);
+    return phys_lowmem[0] + addr;
+  } else if( addr <= 0xFFFFF ) {
+    return phys_lowmem[1] + (addr - 0xC0000);
+  }
+
+  ASSERT(0,"Request for LOWMEM (%u) either beyond 1M or inside ROM",addr);
+  return NULL;
+}
+
 static int map_ram(sys_t *pCtx,uint32 uNumMegsRAM) {
   void *addr;
   uint64 ram_end;
@@ -63,10 +77,12 @@ static int map_ram(sys_t *pCtx,uint32 uNumMegsRAM) {
   addr = mmap(0, 0xA0000, PROT_EXEC | PROT_READ | PROT_WRITE,
 	      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   sys_map(pCtx,0x0,addr,0xA0000);
+  phys_lowmem[0] = addr;
 
   addr = mmap(0, 0x20000, PROT_EXEC | PROT_READ | PROT_WRITE,
 	      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   sys_map(pCtx,0xC0000,addr,0x20000);
+  phys_lowmem[1] = addr;
 
   if( ram_end <= 0xe0000000 ) {
     addr = mmap(0, ram_end - 0x100000, PROT_EXEC | PROT_READ | PROT_WRITE,
@@ -86,6 +102,40 @@ static int map_ram(sys_t *pCtx,uint32 uNumMegsRAM) {
   }
 
   pCtx->ramsize = ram_end;
+
+  return 0;
+}
+
+static int load_bios_vga(sys_t *pCtx) {
+  int in;
+  int flen,mlen,r;
+  void *tmp;
+
+  in = open("vgabios.rom",O_RDONLY);
+  if( in == -1 ) {
+    LOG("Failed to open BIOS ROM file: %s",strerror(errno));
+    return -1;
+  }
+  flen = lseek(in,0,SEEK_END);
+  lseek(in,0,SEEK_SET);
+  mlen = flen;
+  if( flen & 0xFFF ) {
+    mlen = flen & ~0xFFF;
+    mlen += 0x1000;
+  }
+
+  ASSERT(mlen <= 0x20000,"File \"%s\" too big for BIOS area","seabios.rom");
+
+  r = posix_memalign(&tmp,4096,0x20000);
+  ASSERT(r == 0,"Failed to allocate aligned memory for BIOS");
+  read(in,tmp,flen);
+
+  sys_map(pCtx,0xC0000,tmp,0x20000);    // Legacy location
+//  sys_map(pCtx,0xfffe0000,tmp,0x20000); // Shadow location
+
+  // Can't free 'tmp' here, as it's now in use..
+  // TODO
+  // LEAK
 
   return 0;
 }
@@ -120,6 +170,8 @@ static int load_bios(sys_t *pCtx) {
   // Can't free 'tmp' here, as it's now in use..
   // TODO
   // LEAK
+
+  load_bios_vga(pCtx);
 
   return 0;
 }
@@ -406,19 +458,19 @@ static int sys_run_vcpu(sys_t *pCtx,uint8 cpu) {
 
     pStat = pCtx->vcpu[cpu].stat;
     if( pStat->exit_reason == KVM_EXIT_IO ) {
-      if( handle_pci(pStat) != 0 ) { // Not PCI, fallback to ISA
-	if( handle_io(pStat) != 0 ) {
-	  ASSERT(0,"KVM EXIT - IO (port=0x%x) - No handler",pStat->io.port);
-	}
-      }
+      //if( handle_pci(pStat) != 0 ) { // Not PCI, fallback to ISA
+      	if( handle_io(pStat) != 0 ) {
+      	  ASSERT(0,"KVM EXIT - IO (port=0x%x) - No handler",pStat->io.port);
+      	}
+      //}
     } else if( pStat->exit_reason == KVM_EXIT_DEBUG ) {
       ASSERT(0,"KVM EXIT - DEBUG");
     } else if( pStat->exit_reason == KVM_EXIT_MMIO ) {
-      if( handle_pci(pStat) != 0 ) {
-	if( handle_mmio(pStat) != 0 ) {
-	  ASSERT(0,"KVM EXIT - MMIO (Address=0x%x) - No handler",pStat->mmio.phys_addr);
-	}
-      }
+      //if( handle_pci(pStat) != 0 ) {
+      	if( handle_mmio(pStat) != 0 ) {
+      	  ASSERT(0,"KVM EXIT - MMIO (Address=0x%x) - No handler",pStat->mmio.phys_addr);
+      	}
+      //}
     } else {
       LOG("Unhandled KVM exit reason %u on VCPU%i",pStat->exit_reason,cpu);
       LOG(" errno = %s",strerror(errno));

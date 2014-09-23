@@ -1,19 +1,6 @@
 #pragma once
 
 #include "types.h"
-#include <linux/kvm.h>
-
-typedef enum {
-  ePCIBar_Invalid = 0,
-  ePCIBar_BAR0,
-  ePCIBar_BAR1,
-  ePCIBar_BAR2,
-  ePCIBar_BAR3,
-  ePCIBar_BAR4,
-  ePCIBar_BAR5,
-  ePCIBar_ExpansionROM,
-  ePCIBar_MAX,
-} ePCIBar;
 
 #define PCI_CFG_REG_BAR0   0x10
 #define PCI_CFG_REG_BAR1   0x14
@@ -50,16 +37,14 @@ typedef struct {
   uint8 bus,dev,fn;
 
   pcidev_config_t conf;
-  uint32 initialBARs[ePCIBar_MAX];
 
-  uint8  (*readb)(ePCIBar bar,int off);
-  uint16 (*readw)(ePCIBar bar,int off);
-  uint32 (*readl)(ePCIBar bar,int off);
-  void   (*writeb)(ePCIBar bar,int off,uint8  val);
-  void   (*writew)(ePCIBar bar,int off,uint16 val);
-  void   (*writel)(ePCIBar bar,int off,uint32 val);
+  uint8  (*readb)(int reg);
+  uint16 (*readw)(int reg);
+  uint32 (*readl)(int reg);
+  void   (*writeb)(int reg,uint8  val);
+  void   (*writew)(int reg,uint16 val);
+  void   (*writel)(int reg,uint32 val);
 } pcidev_t;
 
-int x86_pci_init(void);
-int pci_register_dev(const pcidev_t *dev);
-int handle_pci(struct kvm_run *pStat);
+int pci_init(void);
+int pci_register_dev(int bus,const pcidev_t *dev);

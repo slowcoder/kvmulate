@@ -1,6 +1,7 @@
 #pragma once
 
 #include <linux/kvm.h>
+#include <sys/mman.h>
 #include "types.h"
 
 
@@ -33,3 +34,4 @@ struct sys *sys_create(uint32 uNumMegsRAM,uint8 uNumVCPUs);
 void        sys_destroy(struct sys *pSys);
 int         sys_run(struct sys *pSys);
 
+void       *sys_getLowMem(uint32 addr);

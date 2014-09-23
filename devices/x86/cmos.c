@@ -137,9 +137,13 @@ static uint8 cmos_inb(struct io_handler *hdl,uint16 port) {
   } else if( pCtx->indexreg == 0x0F ) { // Reset Code
     return pCtx->resetcode;
   } else if( pCtx->indexreg == 0x10 ) { // Installed floppy drives
+    return (0x4<<4); // Master is 1.44MB 3.5"
     return 0; // None
   } else if( pCtx->indexreg == 0x12 ) { // Hard Disk Types
     return 0xF0; // HDD 0 = Type "47", HDD 1 = No drive
+  } else if( pCtx->indexreg == 0x13 ) { // Typematic rate
+    LOGW("----++++++++++++------------------++++++++++++++");
+    return 0x00; // Disabled
   } else if( pCtx->indexreg == 0x17 ) { // Extended memory in K, Low byte
     return 0xFF;
   } else if( pCtx->indexreg == 0x18 ) { // Extended memory in K, High byte
@@ -176,6 +180,7 @@ static uint8 cmos_inb(struct io_handler *hdl,uint16 port) {
   } else if( pCtx->indexreg == 0x39 ) { // Emulator disk translation
     return 1; // (0 = CHS, 1 = LBA)
   } else if( pCtx->indexreg == 0x3D ) { // Boot flags #2
+    //return 1; // Boot drive 1 = FDD, Boot drive 2 = none
     return 2; // Boot drive 1 = HDD, Boot drive 2 = none
   } else if( pCtx->indexreg == 0x5b ) { // HighMem (>4GB) Low byte
     uint64 rs;
@@ -238,6 +243,7 @@ static void  cmos_outb(struct io_handler *hdl,uint16 port,uint8 val) {
   case 0x07:
   case 0x08:
   case 0x09:
+  case 0x17:
   case 0x32:
     // Skip...
     break;

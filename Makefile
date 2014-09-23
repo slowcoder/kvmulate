@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -Werror -g -Iinclude/
+CFLAGS := -Wall -g -Iinclude/
 
 OBJS := main.o log.o \
 	system.o \
@@ -19,16 +19,22 @@ OBJS := main.o log.o \
 	devices/x86/vga/vga.o \
 	devices/x86/vga/registers.o \
 	devices/x86/vga/ram.o \
-	devices/x86/ata/ata.o
-
+	devices/x86/vga/rom.o \
+	devices/x86/vga/pci.o \
+	devices/x86/vga/viewer.o \
+	devices/x86/floppy.o \
+	devices/x86/ata/controller.o
 
 DEPS := $(subst .o,.d,$(OBJS))
 SRCS := $(subst .o,.c,$(OBJS))
 
-all: kvmulate
+all: kvmulate boot.bin
 
 kvmulate: $(OBJS)
-	$(CC) $(CFLAGS) -lSDL -o $@ $^
+	$(CC) $(CFLAGS) -lSDL -pthread -o $@ $^
+
+boot.bin: bootloader.asm
+	nasm -f bin -o $@ $<
 
 %.o: %.c
 	@echo "CC       $<"
@@ -37,7 +43,7 @@ kvmulate: $(OBJS)
 
 clean:
 	@echo "CLEAN"
-	@$(RM) -r $(OBJS) $(DEPS) kvmulate
+	@$(RM) -r $(OBJS) $(DEPS) kvmulate boot.bin
 
 .PHONY: clean
 
