@@ -185,15 +185,37 @@ int updateGraphics(vgactx_t *pVGA) {
   w = 320;
 //  h = 400;
   h = 200;
-  for(y=0;y<h;y++) {
-    for(x=0;x<w;x++) {
-      uint8 palndx;
-      //palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/4) + o );
-      palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/1) + o );
+  if( (w == 320) && (h == 200) ) {
+    int ci;
+    uint32 c;
 
-      pFB[y*640+x] = (pVGA->pel[palndx*3+0]<<18) |
-                    	(pVGA->pel[palndx*3+1]<<10) |
-                    	(pVGA->pel[palndx*3+2]<<2);
+    for(y=0;y<h;y++) {
+      for(x=0;x<w;x++) {
+
+        //ci = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/4) + o );
+        ci = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/1) + o );
+
+        c =  (pVGA->pel[ci*3+0]<<18) |
+             (pVGA->pel[ci*3+1]<<10) |
+             (pVGA->pel[ci*3+2]<<2);
+        pFB[(y*2+0)*640+(x*2+0)] = c;
+        pFB[(y*2+0)*640+(x*2+1)] = c;
+        pFB[(y*2+1)*640+(x*2+0)] = c;
+        pFB[(y*2+1)*640+(x*2+1)] = c;
+      }
+    }
+
+  } else { // Don't know how to scale this...
+    for(y=0;y<h;y++) {
+      for(x=0;x<w;x++) {
+        uint8 palndx;
+        //palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/4) + o );
+        palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/1) + o );
+
+        pFB[y*640+x] = (pVGA->pel[palndx*3+0]<<18) |
+                      	(pVGA->pel[palndx*3+1]<<10) |
+                      	(pVGA->pel[palndx*3+2]<<2);
+      }
     }
   }
 
@@ -253,7 +275,9 @@ static kssc_t kssc[] = { { SDLK_1,  0x02 },
 			 { SDLK_F7, 0x41 },
 			 { SDLK_F8, 0x42 },
 			 { SDLK_F9, 0x43 },
-			 { SDLK_F10,0x44 },
+       { SDLK_F10,0x44 },
+       { SDLK_F11,0x45 },
+       { SDLK_F12,0x46 },
 			 { SDLK_RETURN, 0x1C },
 			 { SDLK_SPACE , 0x39 },
 			 { SDLK_LALT  , 0x38 },
