@@ -183,15 +183,17 @@ int updateGraphics(vgactx_t *pVGA) {
   pFB = pScreen->pixels;
 
   w = 320;
-  h = 400;
+//  h = 400;
+  h = 200;
   for(y=0;y<h;y++) {
     for(x=0;x<w;x++) {
       uint8 palndx;
-      palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/4) + o );
+      //palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/4) + o );
+      palndx = *(uint8*)( pVGA->pVRAM[x&3] + (((y*w)+x)/1) + o );
 
       pFB[y*640+x] = (pVGA->pel[palndx*3+0]<<18) |
-	(pVGA->pel[palndx*3+1]<<10) |
-	(pVGA->pel[palndx*3+2]<<2);
+                    	(pVGA->pel[palndx*3+1]<<10) |
+                    	(pVGA->pel[palndx*3+2]<<2);
     }
   }
 
