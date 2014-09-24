@@ -80,7 +80,9 @@ static void cmd_write_sectors(atacontroller_t *pCont) {
   ASSERT( ((pDev->reg[REG_DEVICE_HEAD] >> 6)&1) == 1, "CHS Translation not implemented");
 
   pCont->pCurrDev->writeBufferOffset = 0;
-  pCont->pCurrDev->writeBuffer = (uint8*)calloc(1,512);
+  pCont->pCurrDev->writeBufferSize = pDev->reg[REG_SECTOR_COUNT] * 512;
+  ASSERT(pDev->reg[REG_SECTOR_COUNT]!=0,"Does 0 mean 256 here?");
+  pCont->pCurrDev->writeBuffer = (uint8*)calloc(pDev->reg[REG_SECTOR_COUNT],512);
   pCont->pCurrDev->writeBufferLBA = lba;
 
   // Signal that the data is ready
@@ -472,17 +474,17 @@ static void pio_outw(io_handler_t *handler,uint16 address,uint16 val) {
   pCont->pCurrDev->writeBufferOffset += 2;
   //LOG("Data written at 0x%04x, offset is now %i",address,pCont->pCurrDev->writeBufferOffset);
 
-  if( pCont->pCurrDev->writeBufferOffset == 512 ) {
+  if( pCont->pCurrDev->writeBufferOffset == pCont->pCurrDev->writeBufferSize ) {
     int r;
 
-    LOG("Writing 512bytes to LBA %u",pCont->pCurrDev->writeBufferLBA);
+    LOG("Writing %u bytes to LBA %u",pCont->pCurrDev->writeBufferSize,pCont->pCurrDev->writeBufferLBA);
     r = lseek64(pCont->pCurrDev->backingfile,
 		(uint64)pCont->pCurrDev->writeBufferLBA * 512LL,SEEK_SET);
     if(r==-1) perror("Seek-for-write");
 
     r = write(pCont->pCurrDev->backingfile,
 	      pCont->pCurrDev->writeBuffer,
-	      512);
+	      pCont->pCurrDev->writeBufferSize);
     if(r==-1) perror("Write-for-write");
 
     pCont->pCurrDev->reg[REG_STATUS] = BIT_STATUS_DRDY;
