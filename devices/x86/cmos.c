@@ -155,7 +155,25 @@ static uint8 cmos_inb(struct io_handler *hdl,uint16 port) {
     else ret = 0;
     LOG("Returned CENTURY=%u",ret);
     ret = bin2bcd(pCtx,ret);
-    return ret;    
+    return ret;
+  } else if( pCtx->indexreg == 0x30 ) { // ExtMem (in K) Low Byte
+    uint64 rs;
+    if( pCtx->pSystemCtx->ramsize > 0xE0000000 ) {
+      rs = 0xE0000000;
+    } else {
+      rs = pCtx->pSystemCtx->ramsize;
+    }
+    rs -= 1024LL * 1024LL * 16LL;
+    return (rs>>10);
+  } else if( pCtx->indexreg == 0x31 ) { // ExtMem (in K) High Byte
+    uint64 rs;
+    if( pCtx->pSystemCtx->ramsize > 0xE0000000 ) {
+      rs = 0xE0000000;
+    } else {
+      rs = pCtx->pSystemCtx->ramsize;
+    }
+    rs -= 1024LL * 1024LL * 16LL;
+    return (rs>>18);
   } else if( pCtx->indexreg == 0x34 ) { // ExtMem Low Byte
     uint64 rs;
 
