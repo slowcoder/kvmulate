@@ -126,6 +126,11 @@ static uint8 vgareg_inb(struct io_handler *hdl,uint16 port) {
   } else if( port == 0x3D8 ) { // 6845 Mode select register (color)
     return mode_select_read(pVGA);
   } else if( port == 0x3DA ) { // Input Status #1
+    static int b;
+
+    // "Emulate" VGA vertical retrace...
+    b = !b;
+    return (b<<3);
     return 0x00; // We're never "disabled" (CRT beam end->start transision), nor are we even in vertical retrace
   } else if( port == 0x3CF ) { // Graphics Controller Data Register
     return graphics_controller_read(pVGA);
