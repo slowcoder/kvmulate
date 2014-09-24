@@ -8,10 +8,10 @@
 
 static SDL_Surface *pScreen = NULL;
 
-#if 0
+#if 1
 static void dump_info(vgactx_t *pVGA) {
   if( (pVGA->gcont_reg[0x06] & 1) == 0 ) {
-    //LOG("Text mode");
+    LOG("Text mode");
   } else {
     uint16 vtot,vrs,vde;
     uint16 ehd;
@@ -309,13 +309,15 @@ static void *viewer_thread(void *pArg) {
 
       switch(ev.type) {
       case SDL_KEYDOWN:
-	if( keysym_to_scancode(&ev.key.keysym,&sc) == 0 )
-	  kbd_inject(sc,1);
-	break;
+        if( ev.key.keysym.sym == SDLK_BACKQUOTE )
+          dump_info(pVGA);
+      	if( keysym_to_scancode(&ev.key.keysym,&sc) == 0 )
+      	  kbd_inject(sc,1);
+      	break;
       case SDL_KEYUP:
-	if( keysym_to_scancode(&ev.key.keysym,&sc) == 0 )
-	  kbd_inject(sc,0);
-	break;
+      	if( keysym_to_scancode(&ev.key.keysym,&sc) == 0 )
+      	  kbd_inject(sc,0);
+      	break;
       }
     }
     usleep(1000000LL / 60LL);
