@@ -28,13 +28,10 @@ OBJS := main.o log.o \
 DEPS := $(subst .o,.d,$(OBJS))
 SRCS := $(subst .o,.c,$(OBJS))
 
-all: kvmulate boot.bin
+all: kvmulate
 
 kvmulate: $(OBJS)
 	$(CC) $(CFLAGS) -lSDL -pthread -o $@ $^
-
-boot.bin: bootloader.asm
-	nasm -f bin -o $@ $<
 
 %.o: %.c
 	@echo "CC       $<"
