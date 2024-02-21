@@ -181,7 +181,7 @@ static void build_identify_data(atacontroller_t *pCont,atadev_t *pDev) {
 
   pDev->identify[0] = (1<<6) | (1<<1); // Not removable
   strncpy((char *)&pDev->identify[10],"Serial Number",20); 
-  strncpy((char *)&pDev->identify[23],"Firmware",8);
+  strncpy((char *)&pDev->identify[23],"FW",6);
   strncpy((char *)&pDev->identify[27],"KVMulate VirtuHD",40); // Model number
   pDev->identify[50] = (1<<14);
   pDev->identify[53] = (1<<0); // Words 54-58 are valid (needed for LBA)
