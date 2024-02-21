@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -g -Iinclude/
+CFLAGS := -Wall -g -Iinclude/ `pkg-config --cflags sdl`
 
 OBJS := main.o log.o \
 	system.o \
@@ -31,7 +31,7 @@ SRCS := $(subst .o,.c,$(OBJS))
 all: kvmulate
 
 kvmulate: $(OBJS)
-	$(CC) $(CFLAGS) -lSDL -pthread -o $@ $^
+	$(CC) $(CFLAGS) -lSDL -pthread -o $@ $^ `pkg-config --libs sdl`
 
 %.o: %.c
 	@echo "CC       $<"
